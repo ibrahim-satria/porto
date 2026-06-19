@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         type();
     }
 
-    // --- 5. Logika Form Kontak ---
+    // --- 5. Logika Form Kontak (Formspree) ---
     const contactForm = document.getElementById('contactForm');
     
     if (contactForm) {
@@ -100,12 +100,36 @@ document.addEventListener("DOMContentLoaded", () => {
             submitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Sending...';
             submitBtn.disabled = true;
 
-            setTimeout(() => {
-                alert("Thank you! Your message has been sent successfully.");
-                contactForm.reset();
+            const formData = new FormData(contactForm);
+
+            fetch("https://formspree.io/f/xlgkkkwk", { 
+                method: "POST",
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Thank you! Your message has been sent successfully.");
+                    contactForm.reset();
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            alert(data["errors"].map(error => error["message"]).join(", "));
+                        } else {
+                            alert("Oops! There was a problem submitting your form");
+                        }
+                    })
+                }
+            })
+            .catch(error => {
+                alert("Oops! There was a problem submitting your form");
+            })
+            .finally(() => {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
-            }, 2000);
+            });
         });
     }
 });
